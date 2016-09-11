@@ -1,0 +1,131 @@
+---
+- name: Make Template dir
+  file:
+    path=/etc/nginx/templates
+    state=directory
+
+
+- name: Make WWW dir
+  file:
+    path={{ www_dir }}
+    state=directory
+    owner={{ www_user }}
+    group={{ www_group }}
+    mode=0755
+
+- name: Make Domain dir
+  file:
+    path="{{ www_dir }}/{{ site_dir }}"
+    state=directory
+    owner={{ www_user }}
+    group={{ www_group }}
+    mode=0755
+
+
+- name: Make LOG dir
+  file:
+    path={{ www_log }}
+    state=directory
+    owner={{ www_user }}
+    group={{ www_group }}
+    mode=0755
+
+- name: Install nginx
+  apt:
+    name=nginx
+    state=latest
+
+
+
+- name: Presence of /etc/nginx/conf.d/default.conf
+  stat: path=/etc/nginx/conf.d/default.conf
+  register: default_conf_stat
+
+- name: BackUP /etc/nginx/conf.d/default.conf
+  command: mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf_old_{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}
+  when: default_conf_stat.stat.exists
+
+
+
+- name: Presence /etc/nginx/templates/php
+  stat: path=/etc/nginx/templates/php
+  register: php_stat
+
+- name: BackUP /etc/nginx/templates/php
+  command: mv /etc/nginx/templates/php /etc/nginx/templates/php_old_{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}
+  when: php_stat.stat.exists
+
+- name: Copy file to /etc/nginx/templates/php
+  template:
+    src=php.j2
+    dest=/etc/nginx/templates/php
+
+
+
+- name: Presence /etc/nginx/templates/phpmyadmin
+  stat: path=/etc/nginx/templates/phpmyadmin
+  register: phpmyadmin_stat
+
+- name: BackUP /etc/nginx/templates/phpmyadmin
+  command: mv /etc/nginx/templates/phpmyadmin /etc/nginx/templates/phpmyadmin_old_{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}
+  when: phpmyadmin_stat.stat.exists
+
+- name: Copy file to /etc/nginx/templates/phpmyadmin
+  template:
+    src=phpmyadmin.j2
+    dest=/etc/nginx/templates/phpmyadmin
+
+
+
+- name: Presence /etc/nginx/templates/default
+  stat: path=/etc/nginx/templates/default
+  register: default_stat
+
+- name: BackUP /etc/nginx/templates/default
+  command: mv /etc/nginx/templates/default /etc/nginx/templates/default_old_{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}
+  when: default_stat.stat.exists
+
+- name: Copy file to /etc/nginx/templates/default
+  template:
+    src=default
+    dest=/etc/nginx/templates/default
+
+
+
+- name: Presence /etc/nginx/nginx.conf
+  stat: path=/etc/nginx/nginx.conf
+  register: nginx_stat
+
+- name: BackUP /etc/nginx/nginx.conf
+  command: mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf_old_{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}
+  when: nginx_stat.stat.exists
+
+- name: Copy file to /etc/nginx/nginx.conf
+  template:
+    src=nginx.conf.j2
+    dest=/etc/nginx/nginx.conf
+
+
+
+- name: Presence /etc/nginx/sites-available/default
+  stat: path=/etc/nginx/sites-available/default
+  register: default_site_stat
+
+- name: BackUP /etc/nginx/sites-available/default
+  command: mv /etc/nginx/sites-available/default /etc/nginx/sites-available/defaultold_{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}
+  when: default_site_stat.stat.exists
+
+- name: Copy /etc/nginx/sites-available/default
+  template:
+    src=sites-available.default
+    dest=/etc/nginx/sites-available/default
+
+
+
+
+- name: Create symlink to /etc/nginx/sites-enabled/default
+  file:
+    src=/etc/nginx/sites-available/default
+    dest=/etc/nginx/sites-enabled/default
+    state=link
+  notify: restart nginx

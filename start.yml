@@ -1,0 +1,15 @@
+---
+
+- name: Install MySQL, Nginx
+  hosts: test
+  #  remote_user: root
+  # remote_user: user
+  become: yes
+  become_method: sudo
+
+  roles:
+    - mysql
+    - nginx
+    - php-fpm
+    - monitoring
+    - phpmyadmin

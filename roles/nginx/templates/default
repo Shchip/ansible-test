@@ -1,0 +1,23 @@
+#### /etc/nginx/templates/default
+
+index index.html index.php;
+
+location / {
+try_files $uri $uri/ /index.php?q=$uri&$args;
+}
+
+# Deny acess to file .htaccess и .htpassword
+location ~ /\.ht {
+deny all;
+}
+
+location = /favicon.ico {
+log_not_found off;
+access_log off;
+}
+
+location = /robots.txt {
+allow all;
+log_not_found off;
+access_log off;
+}

@@ -1,0 +1,13 @@
+---
+- name: Install Ruby
+  apt:
+    name=ruby
+    state=latest
+
+- name: Install Gem - Socout_Realtime
+  command: "{{ item }}"
+  with_items:
+    - gem install scout_realtime
+    - scout_realtime stop
+    - scout_realtime --port {{ monitoring_port}}
+    - scout_realtime restart

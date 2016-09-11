@@ -1,0 +1,58 @@
+---
+- name: Install Mysql package
+  apt:
+    name={{ item }}
+    state=present
+  with_items:
+    - mysql-server
+    - python-mysqldb
+#- name: Configure SELinux to start mysql on any port
+#  seboolean: name=mysql_connect_any state=true persistent=yes
+#  when: ansible_selinux.status == "enabled"
+
+- name: Remove the MySQL test database
+  action:
+    mysql_db db=test
+    state=absent
+
+- name: Create Mysql configuration file
+  template:
+    src=my.cnf
+    dest=/etc/my.cnf
+
+- name: Create databases
+  mysql_db:
+    name={{item}}
+    state=present
+    collation=utf8_general_ci
+    encoding=utf8
+  with_items:
+    - db1
+    - db2
+
+- name: Add deploy DB user and allow access to news_* databases
+  mysql_user: name=bob password=12345 priv=*.*:ALL state=present
+#    name={{user}}
+#    password={{pass}}
+#    host="%"
+#    priv=db1.*:ALL/db2.*:ALL,GRANT
+#    state=present
+
+- name: Set root password
+  mysql_user: name=root password="{{pass}}" host="{{item}}" priv=*.*:ALL,GRANT state=present
+  with_items:
+    - "{{ansible_hostname}}"
+    - 127.0.0.1
+    - ::1
+    - localhost
+
+- name: Restart the MySQL service
+  action:
+    service name=mysql
+    state=restarted enabled=true
+
+- name: Start Mysql Service
+  service: name=mysqld state=started enabled=yes
+  notify:
+  - restart mysql
+

@@ -1,0 +1,28 @@
+# /etc/nginx/templates/php
+
+location ~ \.php$ {
+try_files $uri =404; 
+
+fastcgi_pass   unix:{{ fastcgi_pass_sock }}/{{ fcgi_pool_name }}.sock;
+
+fastcgi_cache  one;
+
+fastcgi_cache_min_uses 3;
+
+fastcgi_cache_valid 200 301 302 304 5m;
+
+fastcgi_cache_key "$request_method|$host|$request_uri";
+
+# fastcgi_hide_header "Set-Cookie";
+
+# fastcgi_ignore_headers "Cache-Control" "Expires";
+
+fastcgi_index  index.php;
+
+#  fastcgi_intercept_errors on; # for testing
+
+include fastcgi_params;
+
+fastcgi_param       SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+fastcgi_ignore_client_abort     off;
+}

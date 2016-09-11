@@ -1,0 +1,10 @@
+server {
+  root {{ www_dir}}/{{ site_dir }};
+
+  access_log {{ www_log }}/default-access.log;
+  error_log  {{ www_log }}/default-error.log;
+
+  include /etc/nginx/templates/default;
+  include /etc/nginx/templates/php;
+  include /etc/nginx/templates/phpmyadmin;
+}

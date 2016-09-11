@@ -1,0 +1,47 @@
+---
+- name: Make dir for fcgi-cache
+  file:
+    path={{ fcgi_cache }}
+    state=directory
+    owner={{ www_user }}
+    group={{ www_group }}
+    
+
+- name: Install php-fpm and deps
+  apt:
+    name={{ item }}
+    state=present
+  with_items:
+    - php5-fpm
+    - php5-mysql
+    - php5-cgi
+
+
+
+- name: Presence of /etc/php5/fpm/pool.d/www.conf
+  stat: path=/etc/php5/fpm/pool.d/www.conf
+  register: www_conf_stat
+
+- name: BackUP /etc/php5/fpm/pool.d/www.conf
+  command: mv /etc/php5/fpm/pool.d/www.conf /etc/php5/fpm/pool.d/www.conf_old_{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}
+  when: www_conf_stat.stat.exists
+
+- name: Copy config to /etc/php5/fpm/pool.d/www.conf
+  template:
+    src=www.conf.j2
+    dest=/etc/php5/fpm/pool.d/www.conf
+  notify: restart php5-fpm
+
+
+
+
+- name: Copy test.php
+  copy:
+    src=test.php
+    dest={{ www_dir }}/{{ site_dir }}/test.php
+
+- name: Restart the Nginx service
+  action:
+    service name=nginx
+    state=restarted enabled=true
+

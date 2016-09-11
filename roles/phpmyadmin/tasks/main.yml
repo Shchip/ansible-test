@@ -1,0 +1,28 @@
+---
+- name: Set YES to create DB before installing
+  debconf: name=phpmyadmin question='phpmyadmin/dbconfig-install' value='true' vtype='boolean'
+
+- name: Confirm APP password before installing
+  debconf: name=phpmyadmin question='phpmyadmin/app-password-confirm' value='{{mysql_root_db_pass}}' vtype='password'
+
+- name: Confirm root password before installing
+  debconf: name=phpmyadmin question='phpmyadmin/mysql/admin-pass' value='{{mysql_root_db_pass}}' vtype='password'
+
+- name: Set APP password before installing
+  debconf: name=phpmyadmin question='phpmyadmin/mysql/app-pass' value='{{mysql_root_db_pass}}' vtype='password'
+
+- name: Set value to install before installing
+  debconf: name=phpmyadmin question='phpmyadmin/reconfigure-webserver' value='' vtype='multiselect'
+
+- name: Install phpmyadmin
+  apt:
+    pkg=phpmyadmin
+    state=latest
+    install_recommends=no
+
+- name: Create symlink for phpmyadmin
+  file:
+    src=/usr/share/phpmyadmin
+    dest={{ www_dir }}/phpmyadmin
+    state=link
+
