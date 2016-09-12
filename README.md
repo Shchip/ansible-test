@@ -6,4 +6,4 @@ After install we can see test php page (http://hostname.test.php), working phpmy
 
 
 
-Before user template configuration, all config files are made backup copies, if there is on the target server.
+Before use template configuration, all config files are made backup copies, if there is on the target server.
